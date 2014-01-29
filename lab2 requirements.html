@@ -1,0 +1,275 @@
+
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=en-us">
+<title>CPSC 350: Computer Architecture and Design</title>
+
+<meta http-equiv=Content-Language content=en-us>
+</head>
+
+<body>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>
+CSCE350: Computer Architecture and Design</span></b></p>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>Lab 2 (Total 65 points)</span></b></p>
+
+<hr>
+
+<!--<p><b><span style='color:red'>Due date: </span>2/2/2012 11:59 PM</b></p> <hr> -->
+
+<h3>1. A simple MIPS program [25 points]</h3>
+
+Write a MIPS program that takes a value in <tt>$s1</tt>
+and stores a value as "<tt>2^i * $s1</tt>" into each of eight registers <tt>$ti</tt>
+(<tt>0 &lt= i &lt= 7</tt>).
+For example, if <tt>$s1</tt> is <tt>3</tt>,
+registers <tt>$t0</tt> through <tt>$t7</tt> will have the following values:
+
+<blockquote>
+<pre>
+$t0 = 3 (3*2^0)
+$t1 = 6 (3*2^1)
+$t2 = 12 (3*2^2)
+
+...
+
+$t7 = 384 (3*2^7)
+</pre>
+</blockquote>
+
+Hint: You don't need to use any multiplcation operation. It can be implemented only with "add" operation.
+
+<p>
+At the top of your program, put <tt>main:</tt> (the word "main" followed by a colon).
+"<tt>main:</tt>" is a MIPS assembly language <i>label</i>.
+This label tells SPIM assembler the starting point of the program.
+You can put the label in column 1, to the left of the first instruction, or on a separate line.
+</p>
+
+<p>
+At the end of your program, add the following two instructions to
+notify the Operating System to regain control when the program execution is done.
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<pre>
+	addi	$v0,	$0,	10	# Move "exit" system function code to argument reg
+	syscall				# Request the OS to carry out the program exit
+</pre>
+</blockquote>
+</p>
+
+Save your code as "Lab2_1.s" and load it into SPIM using "File-&gt;Open". Before you run the program,
+set register <tt>$s1</tt> to some value using "Simulator-&gt;Set value...".
+Then run the program using "Simulator-&gt;Go".
+If the program does not have any syntax error,
+the message "successfully loaded" will appear in the "Messages" window when you load the program.
+Run your program and examine the register values.
+
+<p>
+For this part you may want to check the register values in decimal
+rather than hexadecimal format.
+Under the "Simulator-&gt;Settings" menu option,
+uncheck &quot;General registers in hexadecimal&quot;,
+if the registers don't show values in decimal format.
+
+<p><span style='color:red'>Check-off
+Requirement:</span> Have your TA watch you run your program.</p>
+
+<hr size=2 width="100%" align=center>
+
+<h3>2. Translation from C to MIPS [30 points]</h3>
+
+<p>Convert the following 
+C program into a MIPS program:</p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<pre>
+int B[4] = { 300, 200, 100, 0 };
+int i = 3;
+void main ( void )
+{
+    B[i] = B[0] + B[1] + B[2];
+}
+</pre>
+</blockquote>
+
+<p>This program has
+two variables, an integer array <tt>B</tt> and an integer <tt>i</tt>.
+It adds the first three array elements together and stores the result
+in the last element. To get started, use the following code.</p>
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<pre>
+.data 0x10008000			# data segment start (assembler directive)
+B:	.word 300			# B[0]
+	.word 200			# B[1]
+	.word 100			# B[2]
+	.word 0				# B[3]
+i:	.word 3
+.text 					# code segment start (assembler directive)
+main:	la	$t1,	B		# load the address of B[0] (&(B[0]) == B) into register $t1
+	lw	$t0,	0($t1)		# load value of B[0] into register $t0
+	##
+	## COMPLETE HERE. ##
+	##
+	addi	$v0,	$0,	10	# `exit MIPS program' syscall
+	syscall
+</pre>
+</blockquote>
+
+<p>
+This code gives you a partial solution to the problem.
+Your task is to complete the program by adding the missing MIPS instructions.
+Recall that in MIPS large data structures like arrays are stored in a memory,
+not in the registers.
+To move data from the memory to the register,
+use the "load word" instruction (<tt>lw</tt>).
+In the above program, "<tt>lw $t0, 0($t1)</tt>" loads
+the first array element (B[0]) to the register <tt>$t0</tt>.
+The format of <tt>lw</tt> is "<tt>lw $rt, offset_16bit($rs)</tt>",
+where <tt>$rt</tt> is a register to receive data and
+<tt>offset_16bit($rs)</tt> has an <i>effective address (EA)</i>
+(the address of the word in the memory to be fetched) for data.
+In MIPS, EA is determined by base register and offset.
+Base register (<tt>$rs</tt>) has a "base address" of the memory.
+Offset (<tt>offset_16bit</tt>) has a 16-bit signed integer.
+</p>
+
+<p>
+Here, let's see how to get EA of the first element (<tt>B[0]</tt>) in array <tt>B</tt>.
+In C, you can get EA by using <tt>*B[0]</tt> or simply referring to <tt>B</tt>,
+the array name without a subscript.
+In MIPS, we use "load address" <i>pseudo-instruction</i>, <tt>la</tt>.
+In the above program, the instruction after the label <tt>main:</tt>,
+"<tt>la $t1, B</tt>", shows a pseudo-instruction example.
+It makes the SPIM assembler load the memory address of <tt>B</tt> into register <tt>$t1</tt>.
+Then the next instruction "<tt>lw $t0, 0($t1)</tt>" fetches
+a word from memory at location "<tt>$t1 + 0</tt>".
+Complete the program for loading the second and third elements of array <tt>B</tt>
+to registers, summing up three values, and store the sum in the forth element of array <tt>B</tt>.
+</p>
+
+<p>
+Save your code as "Lab2_2.s" and run it in PCSpim.
+
+<p><b>Notes</b>
+<ul>
+  <li><tt>.data</tt> and <tt>.text</tt> are <i>assembler directives</i>.
+  They specify which part of the memory will be used for data or instructions 
+  during run-time. 
+  Other assembler directives can be found <a href="../reference/assembler_dir.html">here</a>.</li>
+  <li>Each element of the array is offset by four bytes, because MIPS uses four
+  bytes (one word) to store an integer. MIPS memory uses <i>byte addressing</i>.</li>
+</ul></p>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Allow TA to view your program in the text editor and demonstrate program execution in SPIM.</p>
+
+<hr size=2 width="100%" align=center>
+
+<h3>3. Console input [10 points]</h3>
+
+<p>
+Write a MIPS program to get user input from keyboard and
+store value you enter to <tt>$s0</tt> register.
+This program will print a prompt message on the PCSpim console window,
+and then wait for user input.
+</p>
+
+<p>
+<b>Step 1:</b>
+As shown in Part 2, add <tt>.data</tt> and <tt>.text</tt> assembler directives to your program.
+</p>
+
+<p>
+<b>Step 2:</b>
+Define a prompt message in data segment.
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<pre>
+mesg: .asciiz "Enter the value for register s1:"
+</pre>
+</blockquote>
+
+The assembler directive <tt>.asciiz</tt>
+says that a type of the <tt>mesg</tt> variable is
+a null-terminated string (exactly the same as in C language).
+The string value is enclosed by quotes.
+</p>
+
+<p>
+<b>Step 3:</b>
+Add the following codes in text segment to print the message on console.
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<pre>
+la	$a0,	mesg		# Load effective address(mesg) to $a0
+addi	$v0,	$0,	4	# Load constant 4 to reg v0
+syscall				# Switch into the "kernel" to print 'mesg' out
+</pre>
+</blockquote>
+</p>
+
+Take a look at explanation about these three instructions.
+<ol>
+<li>"<tt>la $a0, mesg</tt>" loads the memory address of
+the string variable <tt>mesg</tt> into register <tt>$a0</tt>.</li>
+<li>"<tt>addi $v0, $0, 4</tt>" loads a constant <tt>4</tt> into register <tt>$v0</tt>.
+<tt>4</tt> is used for Operating System to perform the "print string" operation.
+This instruction literally means "store the result of <tt>$0+4</tt> into register <tt>$v0</tt>".
+Because register <tt>$0</tt> has a constant <tt>0</tt>,
+the result of this instruction is to copy the immediate constant 4 to register <tt>$v0</tt>.</li>
+<li> "<tt>syscall</tt>" instruction invokes operating system
+to perform a task on behalf of the calling program,
+in this case, to print a string on the console.
+syscall is used when a system procedure call is required.
+Arguments for the procedure are passed by two registers, <tt>$a0</tt> and <tt>$v0</tt>.
+After a system procedure is finished, OS forwards control to the user program.</li>
+</ol>
+</p>
+
+<p>
+<b>Step 4:</b>
+Add the following codes to get keyboard input from a user.
+
+<blockquote style='margin-top:5.0pt;margin-bottom:5.0pt'>
+<pre>
+addi	$v0,	$0,	5	# reg v0 = 5
+syscall
+</pre>
+</blockquote>
+
+Take a look at explanation about these two instructions.
+<ol>
+<li>"<tt>addi $v0, $0, 5</tt>" loads the constant value <tt>5</tt>
+in to register <tt>$v0</tt>.
+System call <tt>5</tt> is used for "input number" operation.</li>
+<li>When "<tt>syscall</tt>" is executed with <tt>$v0</tt>=5,
+your program will allow a user to input a number from a keyboard.
+The input number is stored to register <tt>$v0</tt>.</li>
+</ol>
+
+<p>
+Since we are using "exit" system call at the end of the program, 
+put those instructions after "read integer" system call to copy the value to $s0.
+
+<pre>
+	add	$s0,	$v0,	$0
+</pre>
+
+<p>
+Save your code as "Lab2_3.s" and run it in PCSpim.
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Allow TA to view your program in the text editor and demonstrate program execution in SPIM.</p>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+
+Turn in three source files (<tt>Lab2_1.s, Lab2_2.s, and Lab2_3.s</tt>).</p>
+
+</body>
+
+</html>
