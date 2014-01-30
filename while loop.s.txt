@@ -5,12 +5,6 @@
 
 
 
-.data # "data section" global, static modifiable data
-	counter: .word 0
-.text
-
-.globl main # declare `main' as a global symbol
-
 main:
 	li $t8, 0 #counter1
 	li $t9, 0 #counter2
