@@ -1,0 +1,169 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>CSCE 350: Computer Architecture and Design</title>
+<script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/document_iterator.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/find_proxy.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/get_html_text.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/global_constants.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/name_injection_builder.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/number_injection_builder.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/string_finder.js"></script><script src="chrome-extension://lifbcibllhkdhoafpjfnlhfpfgnpldfl/change_sink.js"></script><meta name="document_iterator.js"><meta name="find_proxy.js"><meta name="get_html_text.js"><meta name="global_constants.js"><meta name="name_injection_builder.js"><meta name="number_injection_builder.js"><meta name="string_finder.js"><meta name="change_sink.js"></head>
+
+<body>
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">Lab 3 (Total 80 points)</span></b></p>
+
+<hr>
+
+<!-- <p><b><span style="color:red">Due date: </span>2/14/2012 11:59 PM</b></p>
+
+<hr>-->
+
+<h3>1. Testing Power of Two [20 points]</h3>
+Write a MIPS program that tests if a number is a power of two.
+Set register <tt>$t0</tt> to some value in SPIM and use this
+for testing power of two.
+The program will generate output in console.
+<pre>35 is not a power of two.
+256 is a power of two.
+</pre>
+
+Test the program with different values. Save your code as "Lab3_1.s" and run it in PCSpim.
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution with different values in SPIM.</p>
+
+<hr>
+
+<h3>2. Counting Bits [20 points]</h3>
+<p>
+Initialize one register to a bit value
+that represents a positive 32-bit integer from keyboard input.
+Now the program determines how many <tt>1</tt> bits are in the pattern.
+So the bit pattern:
+<tt>0000 0000 1001 1000 1110 1010 0101 0011</tt>
+(i.e. 0x98EA53 in hexadecimal or 10021459 in decimal format)
+has 12 bits for <tt>1</tt> and 20 bits for <tt>0</tt>.
+</p>
+
+<p>
+The program will ask a user to type one decimal value from keyboard:
+</p><pre>Enter one value:
+</pre>
+After counting the number of 1 bits for the given value,
+the program will generate output in console.
+<pre>10021459 has 12 bits for 1.
+</pre>
+Test the program with different values. Save your code as "Lab3_2.s" and run it in PCSpim.
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution with different values in SPIM.</p>
+
+<hr>
+
+<h3>3. Sorting Array [40 points]</h3>
+
+Write a MIPS program that sorts elements of an array in non-decreasing order.
+The array (<tt>B</tt>) has 32-bit integer elements,
+where the array size is specified by <tt>SZ</tt>.
+Declare <tt>B</tt> and <tt>SZ</tt> variables in data segment.
+
+<blockquote style="margin-top:5.0pt;margin-bottom:5.0pt">
+<pre>.data
+B:	.word 722		# B[0]
+	.word 21 		# B[1]
+	.word 4 		# B[2]
+	.word 89		# B[3]
+	.word 16384		# B[4]
+	.word 350		# B[5]
+	.word 6046		# B[6]
+	.word 897		# B[7]
+	.word 1201		# B[8]
+	.word 0			# B[9]
+	.word 904		# B[10]
+	.word 897		# B[11]
+	.word 4805		# B[12]
+	.word 679		# B[13]
+	.word 7			# B[14]
+SZ:	.word 15
+</pre>
+</blockquote>
+
+Use any in-place sorting algorithm you know.
+The following C code shows a bubble sorting algorithm.
+
+<blockquote style="margin-top:5.0pt;margin-bottom:5.0pt">
+<pre>   int i, j, tmp;
+
+   for (i=0; i&lt;SZ; ++i) {
+       for (j=i+1; j&lt;SZ; ++j) {
+           if (B[i] &gt; B[j]) {
+               tmp = B[i];
+               B[i] = B[j];
+               B[j] = tmp;
+           }
+       }
+       
+       /* Optional: Use this to display */
+       printf("B[%d] = %d\n", i, B[i]);
+   }
+</pre>
+</blockquote>
+
+<p>Check the result in the SPIM environment after program execution.
+The program does not need to print out the sorted numbers in console,
+but it must store the values in sorted order back to B.</p>
+
+<p>Save your code as "Lab3_3.s" and run it in PCSpim.</p>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+<hr>
+
+<h3>Control Flow Instructions in MIPS</h3>
+
+<table border="1" width="800">
+<tbody><tr><th>Type</th><th>Instruction</th><th>Description</th></tr>
+<tr><td>Unconditional Jump</td>
+    <td width="18%"><tt>j Label</tt></td>
+    <td>This instruction jumps unconditionally to the instruction
+        followed by the label <tt>Label</tt>.
+        It is equivalent to the <tt>goto</tt> statement in C.</td></tr>
+<tr><td>Conditional Branch on Equality</td>
+    <td><tt>beq rs, rt, Label</tt></td>
+    <td>This instruction branches to label <tt>Label</tt>,
+        if registers <tt>rs</tt> and <tt>rt</tt> have the same values.
+        In Register Transfer Notation (RTN), it means:
+        <pre>        if ( R[rs] == R[rt] )
+            goto Label;
+        </pre>
+        If the registers have different values,
+        the processor proceeds to the next instruction.</td></tr>
+<tr><td>Conditional Branch on Inequality</td>
+    <td><tt>bne rs, rt, Label</tt></td>
+    <td>This instruction branches to label <tt>Label</tt>,
+        if registers <tt>rs</tt> and <tt>rt</tt> have the same values.</td></tr>
+<tr><td>Set Register Based on Relation</td>
+    <td><tt>slt rd, rs, rt</tt></td>
+    <td>This instruction sets register <tt>rd</tt> to <tt>1</tt> if <tt>R[rs] &lt; R[rt]</tt>.
+        Otherwise it sets <tt>rd</tt> to <tt>0</tt>.
+        In RTN, it means:
+        <pre>        if ( R[rs] &lt; R[rt] )
+            R[rd] = 1;
+        else
+            R[rd] = 0;
+        </pre>
+        There is an <i>immediate</i> version of the <tt>slt</tt> instruction
+        in which the 3rd argument is a 16-bit signed integer.
+        "<tt>slti rd, rs, 0x0002</tt>" sets <tt>rd</tt> to 1 if <tt>R[rs] &lt; 0x0002</tt>.</td></tr>
+</tbody></table>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+
+Turn in three source files (<tt>Lab3_1.s, Lab3_2.s, and Lab3_3.s</tt>).
+
+
+
+</body><span id="skype_highlighting_settings" display="none" autoextractnumbers="1"></span><object id="skype_plugin_object" location.href="http://students.cs.tamu.edu/wanglei/csce350/handout/lab3.html" location.hostname="students.cs.tamu.edu" style="position: absolute; visibility: hidden; left: -100px; top: -100px; " width="0" height="0" type="application/x-vnd.skype.click2call.chrome.5.6.0"></object></html>
