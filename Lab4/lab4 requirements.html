@@ -1,0 +1,199 @@
+
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=en-us">
+<title>CSCE 350: Computer Architecture and Design</title>
+</head>
+
+<body>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>Lab 4 (Total 80 points)</span></b></p>
+<hr>
+<h3>1. Sum Function [15 points] </h3>
+Write a function that takes three integer parameters
+(<tt>A</tt>, <tt>B</tt>, and <tt>C</tt>)
+and returns a sum of them (<tt>A+B+C</tt>).
+Copy <a href='files/Lab4_1_incomplete.s'>Lab4_1_incomplete.s</a>
+and complete this program.
+Use the parameter passing and call/return sequences
+discussed in class for less than four parameters.
+
+Save your code as "Lab4_1.s" and run it in PCSpim.
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+
+<hr>
+
+<h3>2. 2D Matrix Transpose Function [30 points]</h3>
+Write a matrix transpose function
+that takes one 2D array,
+transposes it, and stores the result to another 2D array.
+The following C code shows that
+<tt>mat_transpose</tt> function
+takes <tt>A</tt> as an input parameter
+and <tt>T</tt> as an output parameter.
+The size of the matrix <tt>A</tt> is specified
+as <tt>NUMROWS_A</tt> and <tt>NUMCOLS_A</tt>.
+
+<blockquote>
+<pre>
+void mat_transpose(int **A, int **T, int NUMROWS_A, int NUMCOLS_A)
+{
+    int i, j;
+    for ( i = 0; i &lt; NUMROWS_A; ++i )
+        for ( j = 0; j &lt; NUMCOLS_A; ++j )
+            T[j][i] = A[i][j];
+    return;
+}
+</pre>
+</blockquote>
+
+Use the calling/return sequences and parameter passing convention
+discussed in class.
+Similar discussion on function calls can be found in textbook Appendix A.
+
+<p>
+Your MIPS program must have a transpose function
+and some codes <u>to print out original and transpose matrices</u>
+on the console.
+</p>
+
+<h4>Storage Organization for 2D Matrix in C</h4>
+
+<p align='center'>
+<table border='1'>
+<tr><td align='center'>Logical Layout</td>
+    <td align='center'>Physical Layout</td></tr>
+<tr><td align='center'><img border=0 src='files/mat_logical.gif'></td>
+    <td align='center'><img border=0 src='files/mat_physical.gif'></td></tr>
+</table>
+Figure 1: Memory Layout for 2D Matrix in C</p>
+
+<p>When the caller function passes a 2D matrix as a parameter in C language,
+a double C pointer (<tt>**A</tt>) is used to pass only the address of the matrix.
+<tt>A</tt> is the address of an array of pointers.
+Element <tt>A[i]</tt> of this array is the address to the row number <tt>i</tt>
+of the 2D matrix.
+A 2D matrix is represented as a collection of its rows,
+with each row just being a one-dimensional array.
+We call this type of organization
+<a href='http://en.wikipedia.org/wiki/Row_major'>row-major order</a>.
+Two pointer dereferences are needed to access
+each element in a matrix.
+That is, to access A[2][1] (at location (2, 1) of the matrix)
+we first dereference pointer A
+to indicate the beginning of row number 2 (=A[2]),
+and dereference that pointer (A[2]) to the element (A[2][1]).</p>
+
+<h4>Declaration of 2D Matrices in Data Segment</h4>
+
+The following code shows declaration of 4x4 matrices
+with initial values in row-major order.
+Use this code for testing a transpose function.
+
+<blockquote>
+<pre>
+.data
+.align	2				# Request alignment on word (4 byte) boundary
+
+## 4x4 Matrix Declaration ##
+A0:	.word 41, 42, 43, 44		# Declare and initialize 1st Row of A
+A1:	.word 55, 56, 57, 58		# Declare and initialize 2nd Row of A
+A2:	.word 19, 10, 11, 12		# Declare and initialize 3rd Row of A
+A3:	.word 23, 24, 25, 26		# Declare and initialize 4th Row of A
+A:	.word A0, A1, A2, A3		# Declare and initialize the pointer to the rows
+
+NUMROWS_A:	.word	4		# the number of rows
+NUMCOLS_A:	.word	4		# the number of columns
+
+## 4x4 Matrix Declaration ##
+T0:	.word  0,  0,  0,  0		# Declare and initialize 1st Row of T
+T1:	.word  0,  0,  0,  0		# Declare and initialize 2nd Row of T
+T2:	.word  0,  0,  0,  0		# Declare and initialize 3rd Row of T
+T3:	.word  0,  0,  0,  0		# Declare and initialize 4th Row of T
+T:	.word T0, T1, T2, T3		# Declare and initialize the pointer to the rows
+
+NUMROWS_T:	.word	4		# the number of rows
+NUMCOLS_T:	.word	4		# the number of columns
+</pre>
+</blockquote>
+
+<p>Array A and T are defined in row-major order in the data segment.
+Not that the first dimensional elements of array A and T store addresses of the corresponding one dimensional arrays.
+To get the addresses of the second dimensional arrays, we use <tt>lw</tt> instructions, not <tt>la</tt> instruction</p>
+
+<p>This example shows how to access A[i][j].</p>
+
+<blockquote>
+<pre>
+	# Assume i is stored in register $t6 and j in register $t7
+	
+	la	$t1,	A		# Load address of A into register $t1
+	
+	sll	$t2,	$t6,	2	# Shift left twice (same as i * 4)
+	add	$t2,	$t2,	$t1	# Address of pointer A[i]
+	lw	$t3,	($t2)		# Get address of an array A[i] and put it into register $t3
+	
+	sll	$t4,	$t7,	2	# Shift left twice (same as j * 4)
+	add	$t4,	$t3,	$t4	# Address of A[i][j]
+	lw	$t0,	($t4)		# Load value of A[i][j]
+</pre>
+</blockquote>
+
+
+Save your code as "Lab4_2.s" and run it in PCSpim.
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+
+<hr>
+
+<h3>3. Fibonacci Number Function [35 points]</h3>
+
+Write a MIPS program that computes a Fibonacci number
+using a recursive function.
+The following code shows a corresponding C program.
+<blockquote>
+<pre>
+int fib(int n)
+{
+    if (n&lt;2) return n;
+
+    return fib(n-1) + fib(n-2);
+}  
+
+void main()
+{
+    int n, fib_n;
+
+    /* Read a positive integer from user and store it to n */
+
+    fib_n = fib(n);
+
+    /* Print fib(n) number */
+}
+</pre>
+</blockquote>
+
+Save your code as "Lab4_3.s" and run it in PCSpim.
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+
+Turn in three source files (<tt>Lab4_1.s, Lab4_2.s, and Lab4_3.s</tt>).
+
+</body>
+
+</html>
