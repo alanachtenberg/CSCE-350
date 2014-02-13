@@ -40,8 +40,9 @@ main:
 
 fib: 
 	bgt $a0, 2, cont #if a0 is greater than 2 do recursion
-	add $v0, $a0, $0 #base case when n is 0 or 1
+	addi $v0, $0, 1 #base case when n is 0 or 1
 	jr $ra
+
 	
 	cont:
 		addi $sp, -12 

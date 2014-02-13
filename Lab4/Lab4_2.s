@@ -59,11 +59,9 @@ main:
 	
 	mat_transpose:
 		li $t6, 0 #i
-		li $t7, 0 #j
-		
-
 		Loop_i:
 			beq $t6, $a2 end_i
+			li $t7, 0 #j
 			Loop_j:
 				beq $t7, $a3 end_j
 				
