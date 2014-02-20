@@ -8,7 +8,7 @@
        .data
 	   
 NL:		.asciiz "\n"
-mesg:    .asciiz "Please input string to convert\n"
+mesg:    .asciiz "Please input string to reverse\n"
 mesg2:	.asciiz "the reversed string is:"
 delim:     .asciiz  "\n" # new line is delim
 buff:   .space  255 #255 byte buffer for string input

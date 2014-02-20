@@ -6,7 +6,7 @@
        .data
 mesg:    .asciiz "Please input string to count\n"
 mesg2:	.asciiz "produces strlen="
-delim:     .asciiz  "" #null
+delim:     .asciiz  "\n" #null
 buff:   .space  256 #256 byte buffer for string input
 
         .text
