@@ -1,6 +1,11 @@
+#Alan Achtenberg
+#CSCE 350-502
+#LAB 5
+#part 2
 
 
        .data
+	   
 NL:		.asciiz "\n"
 mesg:    .asciiz "Please input string to convert\n"
 mesg2:	.asciiz "produces the int :"

@@ -1,4 +1,7 @@
-
+#Alan Achtenberg
+#CSCE 350-502
+#LAB 4
+#part 3
 .data
  mesg1: .asciiz "Input the nth fibonacci number you desire\n"
  mesg2: .asciiz " is the "

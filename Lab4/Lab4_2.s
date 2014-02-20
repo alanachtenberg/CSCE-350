@@ -1,3 +1,8 @@
+#Alan Achtenberg
+#CSCE 350-502
+#LAB 4
+#part 2
+
 .data
 
 .align	2				# Request alignment on word (4 byte) boundary

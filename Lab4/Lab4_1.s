@@ -1,3 +1,7 @@
+#Alan Achtenberg
+#CSCE 350-502
+#LAB 4
+#part 1
         .data
 
 		msg1:   .asciiz  "The sum is "

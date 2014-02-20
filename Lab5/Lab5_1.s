@@ -1,4 +1,7 @@
-
+#Alan Achtenberg
+#CSCE 350-502
+#LAB 5
+#part 1
 
        .data
 mesg:    .asciiz "Please input string to count\n"
@@ -38,10 +41,7 @@ main:
         move     $a0, $t0       # move result to $a0
         syscall             
 
-        li       $v0, 4
-        la       $a0, NL
-        syscall                 # print newline
-
+      
         li       $v0, 10
         syscall                 # exit
 
