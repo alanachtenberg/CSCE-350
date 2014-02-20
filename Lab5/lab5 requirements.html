@@ -1,0 +1,126 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=en-us">
+<title>CSCE 350: Computer Architecture and Design</title>
+</head>
+
+<body>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>Lab 5 (Total 80 points)</span></b></p>
+
+<hr>
+
+
+<h3>1. C <tt>strlen()</tt> Function [20 points]</h3>
+
+<p>The string function, <tt>size_t strlen(const char *s)</tt>
+(found in the standard C library) counts and
+returns the size in bytes of its argument string <tt>s</tt>,
+not including a terminating null character.</p>
+
+<p>Translate this C function, <tt>strlen()</tt> shown below,
+into a MIPS assembly function. Copy <a href="files/Lab5_1_incomplete.s">Lab5_1_incomple.s</a> and complete this program.</p>
+
+<blockquote>
+<pre>
+int strlen(const char *str)
+{
+    int i;
+    for ( i = 0; str[i] != '\0'; i++ )
+        ; /* Nothing. Just count the numbers until the terminating null character */
+
+    return ( i );
+}
+</pre>
+</blockquote>
+
+<p>A character in a string can be read using <tt>lb</tt> (load byte) instruction. 
+The format of the instruction is exactly same as that of <tt>lw</tt> instruction except the size of the unit of reading.</p>
+
+<p>This example shows how to access str[i].</p>
+
+<blockquote>
+<pre>
+	# Assume i is stored in register $t6 and the address of the string is stored $a0
+	
+	add	$t0,	$a0,	$t6	# The size of a character in a string is 1 byte
+	lb	$t1,	($t0)		# Read a character at str[i]
+</pre>
+</blockquote>
+
+<p>Note that "read string" system call returns a string containing '\n' at the end of the string. 
+Thus, '\n' is also counted in strlen().</p>
+
+<p>Save your code as "Lab5_1.s" and run it in PCSpim.</p>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+
+<hr>
+
+<h3>2. C <tt>atoi()</tt> Function [30 points]</h3>
+<p>Write an <tt>atoi()</tt> function in MIPS, which convert a string into an integer.
+This function is one of basic functions in the standard C library.
+This function returns an integer of the string represented in decimal.</p>
+
+<p>The specification is: </p>
+
+<blockquote>
+<pre>
+int atoi (const char * str);
+</pre>
+</blockquote>
+
+<p>If the string contains other than digits, it returns the converted value of the substring from the beginning which contains digits only.
+For example, <tt>atoi("49ers")</tt> returns 49 and <tt>atoi("nothing?")</tt> returns 0. 
+Note that '0' is equal to 48 and '9' is 57. 
+Assume we enter non-negative numbers only.</p>
+
+<p>The program receives a string from keyboard input, pass it to atoi() function,
+and prints the return value from the function on the console.</p>
+
+<p>Save your code as "Lab5_2.s" and run it in PCSpim.</p>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+
+<hr>
+
+<h3>3. String Reverse Function [30 points]</h3>
+
+<p>Write a string reverse function that takes a string as a parameter
+and reverses it.
+The function need not return a reversed string
+if it stores the result to the address of the parameter.
+You might need strlen() function to compute the length of a string.</p>
+
+<p>The program receives a string from keyboard input,
+reverses it by calling a function, and prints the reversed string on the console.</p>
+<blockquote>
+<pre>
+Input a string: cobbler
+Reversed string: relbboc
+</pre>
+</blockquote>
+
+<p>Save your code as "Lab5_3.s" and run it in PCSpim.</p>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in SPIM.</p>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+
+Turn in three source files (<tt>Lab5_1.s, Lab5_2.s, and Lab5_3.s</tt>).
+
+</body>
+
+</html>
