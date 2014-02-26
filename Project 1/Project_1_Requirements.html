@@ -1,0 +1,294 @@
+
+<!-- saved from url=(0065)http://students.cs.tamu.edu/wanglei/csce350/handout/project1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>CSCE 350: Computer Architecture and Design</title>
+</head>
+
+<body lang="EN-US" link="blue" vlink="blue">
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">Project 1 (Total 150 points)</span></b></p>
+
+<hr>
+
+<h3>1. Implementing a Dynamic Memory Allocator</h3>
+<p>
+This part requires you to develop a small set of dynamic memory management routines
+written in the MIPS assembly language.
+These routines should mimic at an elementary level C-library function routines
+that perform dynamic memory allocation and de-allocation.
+You will subsequently use these routines to support dynamic data structures,
+such as, stacks, queues, or any other structure with a linked implementation.
+The general memory allocation and de-allocation problem is quite involved
+for direct implementation in MIPS, so we focus on fixed-size data items.
+In this project, the memory is managed by a singly linked list.</p>
+
+<h3>1.1 Dynamic Memory Organization</h3>
+
+We will be supporting allocation and de-allocation of memory blocks
+using a singly linked list.
+One memory block is defined with <tt>block_t</tt> type in C.
+
+<blockquote>
+<pre>typedef struct _block_t {
+    data_t data;		/* data_t can be anything but needs to be defined */
+    struct _block_t *next;	/* Pointer to the next item in the free list if not zero */
+} block_t;			/* What is the best value for sizeof(block_t)? */
+</pre>
+</blockquote>
+
+<p>
+Each memory block has a pointer that points to the next block.
+Therefore, all the memory blocks are accessible by traversing a list.
+There is a global variable, <tt>FreeList</tt>, which has the first block address.
+</p>
+
+<h3>1.2 Implementing Management Functions </h3>
+
+Implement three functions to manage a memory.
+<ol>
+  <li><tt>void mem_init()</tt>:<br>
+      We use an array <tt>M</tt> with <tt>N</tt> elements of type <tt>block_t</tt>
+      to represent the entire memory.
+      This function does initialization of each block and builds a linked list of currently unallocated blocks.
+      In each element (block),
+      <tt>data</tt> field is set to zero and <tt>next</tt> field is set to the next element.
+      You need to know the size of a block (<tt>sizeof(block_t)</tt>).
+  </li>
+  <li><tt>block_t* mem_alloc()</tt>:<br>
+      This function returns the first available memory block from the linked list.
+      It updates the linked list.</li>
+  <li><tt>void mem_dealloc(block_t *p)</tt>:<br>
+      This function reclaims the block <tt>p</tt> to the linked list.
+      It adds this block at the beginning of the linked list.
+      Thus, the block becomes the first block of the linked list.</li>
+</ol>
+
+<p>
+The following codes show equivalent C functions.
+</p>
+
+<blockquote>
+<pre>#define N		/* quite a large number, such as 20 */
+
+block_t M[N];
+block_t* FreeList = M;	/* Note that Freelist contains currently unallocated blocks only */
+
+void mem_init()
+{
+    int i;
+
+    /* It's a good idea to clear the data area initially. */
+    (void) memset( (void *) M, 0, N * sizeof(block_t) );
+
+    for ( i = 1; i &lt; N; i++ )
+    {
+        M[i - 1].next = &amp;M[i];
+    }
+
+    /* Note: M[N - 1].next = NULL */
+}
+
+block_t* mem_alloc()
+{
+    block_t *p = FreeList;  /* Let p point where F points to */
+    if ( FreeList )         /* if FreeList is not null */
+    {
+        FreeList = FreeList-&gt;next;
+    }
+    else
+    {
+        /* Exception */
+    }
+
+    return( p );
+}
+
+void mem_dealloc(block_t *p)
+{
+    if ( p ) /* if p is not null */
+    {
+        p-&gt;next = FreeList;
+        FreeList = p; /* Update FreeList to point to the latest freed element */
+    }
+    else
+    {
+        /* Exception */
+    }
+}
+</pre>
+</blockquote>
+
+Define two variables, <tt>M</tt> and <tt>FreeList</tt> in data segment.
+Use MIPS <tt>.space</tt> directive
+to allocate a large number of consecutive bytes with uninitialized storage.
+
+<blockquote>
+<pre>.data
+M:		.space	(number)	# Put a number in bytes, which is N * sizeof(block_t).
+FreeList:	.word	M		# Initially it points to M.
+</pre>
+</blockquote>
+
+<hr>
+
+<h3>2. Handling <tt>data_t</tt> Structure</h3>
+
+<p>
+Each element (block) of the linked list
+has one integer value in data_t structure.
+Data of the element is defined with the type <tt>data_t</tt>.</p>
+<p>The following C codes gives you some clues for implementation.
+</p>
+
+<blockquote>
+<pre>typedef struct _data_t {
+    int val;			/* a word of an integer */
+} data_t;			/* What is sizeof(data_t)? */
+</pre>
+</blockquote>
+<p></p>
+
+Implement two functions that assign the <tt>val</tt> field with a specific type
+and one function that prints the value of the <tt>val</tt> field on the console
+properly according to its type.
+<ol>
+<li><tt>void set_data_int(data_t* p, int integer)</tt></li>
+<li><tt>void print_data(data_t* p)</tt></li>
+</ol>
+
+<hr>
+
+<h3>3. Implementing Stack</h3>
+
+<p>
+A <a href="http://en.wikipedia.org/wiki/Stack_(data_structure)">stack</a>
+is a data structure where data blocks are added dynamically as the need arises.
+The order that blocks can be removed, though,
+is the reverse of the chronological order data was entered.
+Stack uses a LIFO (Last In First Out) principle.
+Data enters at the one end ("Top") and exits from the same end of the stack only.
+In this project,
+one data block is the same as the one block (<tt>block_t</tt>).
+<!--Stack is implemented as a linked list.-->
+</p>
+
+<p>
+In MIPS program, define a global variable for the stack data structure, <tt>Top</tt>, in data segment.
+This variable has <u>the address</u> of the first data block in the stack. 
+If there is no block in the stack, it points out <tt>null</tt>. Thus, it has <tt>0</tt> initially.</p>
+
+<blockquote>
+<pre>Top:	.word	0		# Top of Stack
+</pre>
+</blockquote>
+<p></p>
+
+<p>
+Implement two functions for stack manipulation.
+</p><ol>
+<li><tt>void stack_push(data_t* d)</tt>:<br>
+    Allocate a block from <tt>FreeList</tt> (use <tt>mem_alloc()</tt>)
+    and initialize <tt>data</tt> field of the block with parameter <tt>d</tt>.
+    The next pointer (<tt>block_t *next</tt>) of this block points out 
+    the previous top element <tt>Top</tt> points out before this operation in order to maintain the stack properly.
+    Set this new block on the top of the stack by setting <tt>Top</tt> to point out this block.
+    After this function call, the depth of the stack increases by 1.
+</li>
+<li><tt>data_t* stack_pop()</tt>:<br>
+    Return the data of the block at the top of the stack.
+    Set <tt>Top</tt> to point out the element the next pointer points out.
+    Deallocate this block (use <tt>mem_dealloc()</tt>).
+    After this function call, the depth of the stack decreases by 1.
+</li>
+</ol>
+<p></p>
+
+<hr>
+
+<h3>4. Evaluating Postfix Expression</h3>
+
+<p>
+MIPS program will evaluate an expression written in 
+<a href="http://en.wikipedia.org/wiki/Reverse_Polish_notation">postfix</a>
+(a.k.a. Reverse Polish) notation.
+In this notation, each operator appears after its operands.
+This expression does not need parentheses to specify the order among operators.
+</p>
+
+<p>
+To evaluate a postfix expression,
+we make a single left-to-right scan of it.
+We place the operands on a stack until we find an operator.
+We then remove, from the stack, the correct number of operands for the operator
+(in this project, only two operands because all the operators are binary),
+perform the operation, and place the result back on the stack.
+We continue this process until we reach the end of the expression of the string.
+Finally, <u>the answer will be placed on the top of the stack.</u>
+Figure A shows an example of this processing when the input has nine tokens as "62/3-42*+".
+</p>
+
+<p align="center">
+<table border="1">
+<tbody><tr><th align="center">Data (Token)</th><th>Stack[0] (Top)</th><th>Stack[1]</th><th>Stack[2]</th></tr><tr>
+</tr><tr><td>6</td><td>6        </td><td>&nbsp;</td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>2</td><td>6        </td><td>2     </td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>/</td><td>6/2      </td><td>&nbsp;</td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>3</td><td>6/2      </td><td>3     </td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>-</td><td>6/2-3    </td><td>&nbsp;</td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>4</td><td>6/2-3    </td><td>4     </td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>2</td><td>6/2-3    </td><td>4     </td><td>2     </td></tr><tr>
+</tr><tr><td>*</td><td>6/2-3    </td><td>4*2   </td><td>&nbsp;</td></tr><tr>
+</tr><tr><td>+</td><td>6/2-3+4*2</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr>
+</tr></tbody></table>
+Figure A: Postfix expression evaluation
+</p>
+
+<p>
+Implement a function, <tt>int eval(char* e)</tt>,
+which evaluates a postfix expression
+given as a string parameter (the maximum length is 64).
+This function uses <tt>stack_push()</tt>, <tt>stack_pop()</tt>, and
+<tt>set_data_int()</tt>.
+</p>
+
+<p>
+Expressions consist of only integers and arithmetic operators.
+We assume that each character of the string is a single token, hence,
+making the range of an integer between 0 and 9.
+This will simplify parsing the string expression into multiple tokens.
+Therefore, MIPS program receives an expression from a user input
+and prints its evaluation result on the console.
+Please test your program with many different expressions.
+</p>
+
+<hr>
+
+<h3>5. Completing the Project</h3>
+
+<p>Your code must report proper error messages if it finds exceptions, such as stack popup when the stack is empty. 
+It is also an exception if the postfix evaluation string has other than digits and operators.
+It must report an error messages if the stack has more than one block after the evalation of an expression is completed.</p>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Demonstrate
+execution of your program in PCSPIM to TA with several postfix expressions given by TA.</p>
+
+<hr>
+
+Turn in your source code (<b>you can only make one source code file and implement all the functions in it.
+Since each later section will use the function in previous sections, you don't need to make test program for each part.</b>)
+to CSNET.
+One submission is required for one team.
+Please specify team members in the beginning part of each file.
+Source codes must be well-organized with sufficient comments.
+For declaration of each function,
+write comments on the name of function, required parameters (passed to which registers),
+and what it does.
+
+
+
+</body></html>
