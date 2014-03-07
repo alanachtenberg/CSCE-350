@@ -13,7 +13,7 @@
 		divide: .asciiz "/"
 		TOS: .word 0 #top of stack	   initially null
 		test_1: .word 5 
-		test_2: .space 16 # dummy allocator result to test stack
+		test_2: .space 64 # dummy allocator return space 8 8byte blocks
     .text
         .globl  main            # main is a global symbol
 
@@ -30,11 +30,9 @@ main:
 		la $a0, test_1
 		jal stack_push #step here
 		la $a0, test_1
-		addi $s0, 8 #dummy allocator function
+		
 		jal stack_push #step here
-		jal stack_pop
-		jal stack_pop
-		jal stack_pop
+		jal eval
 
         li       $v0, 10
         syscall                 # exit
@@ -101,10 +99,24 @@ main:
 			addi $sp, 4
 		jr $ra
 		
+		#
+		eval:
+			#lw $t1
+			
+		
+		
+		jr $ra
+		
+		
 		mem_alloc:
 			add $v0, $s0, $0
+			addi $s0, 8 #dummy allocator function
 			jr $ra
 			
 		mem_dealloc:
 			sw $0, ($a0)
+			sw $0, 4($a0)
+			addi $s0, -8 #dummy allocator function
 			jr $ra
+			
+		
