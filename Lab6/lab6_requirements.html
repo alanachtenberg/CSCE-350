@@ -1,0 +1,590 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=en-us">
+<title>CSCE 350: Computer Architecture and Design</title>
+</head>
+
+<body lang=EN-US link=blue vlink=blue>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align=center style='text-align:center'><b><span style='font-size:13.5pt'>Lab 6 (Total 100 points)</span></b></p>
+
+<hr>
+
+<h3>0. Objective</h3>
+
+<p>This laboratory assignment introduces Verilog, a Hardware Description Language (HDL) and 
+shows you how to model and simulate basic combinational circuits and classic memory elements. 
+HDLs are used extensively in the process of designing and implementing digital computer hardware components such as ALU and registers.</p>
+
+<p>
+Note: All Verilog codes submitted must be able to run with VCS. The department Sun machine is accessible from the Internet.
+</p>
+
+<hr>
+
+<h3>1. Implementing a simple Boolean function [0 point]</h3>
+
+<table border="1" align="center" cellpadding="10">
+  <tr>
+    <td><img src="files/lab6_1.png"></td>
+  </tr>
+  <tr>
+  <td align="center">Circuit Diagram of <tt>ab + ~a</tt></td>
+  </tr>
+</table>
+
+<p><b>Step 1:</b>
+Using primitive Verilog gates, we implement the Boolean function,
+<tt>ab + ~a</tt> shown in the figure above.
+The following Verilog code has two modules: <tt>first_module</tt>
+and <tt>test_first</tt>.
+<tt>first_module</tt> has two inputs (<tt>a</tt>, <tt>b</tt>)
+and has one output (<tt>out</tt>) for the Boolean function.
+<tt>test_first</tt> is a test bench module
+that examines the output of <tt>first_module</tt>
+with different inputs. 
+The test bench module is used <u>to generate test cases only</u>.
+</p>
+
+<p>Do not implement your design in the test bench.</p>
+
+<blockquote>
+<pre>
+module first_module(out, a, b);
+    input    a, b;
+    output   out;
+    wire     a1, a2;
+
+    not    n1(a1, a);
+    and    and1(a2, a, b);
+    or     or1(out,a1,a2);
+endmodule
+
+module test_first();              /* test bench module for first_module() */
+    reg    a, b;
+    wire   out;
+
+    first_module fm(out,a,b);
+
+    initial begin
+        $monitor ($time,"\ta=%b\tb=%b\tout=%b",a,b,out);
+        a = 0; b = 0;
+        #1 
+        a = 0; b = 1;
+        #1
+        a = 1; b = 0;
+        #1
+        a = 1; b = 1;
+        #1 
+        $finish;
+    end
+endmodule
+</pre>
+</blockquote>
+
+<p>Please name all wires before implementation.
+Copy this code into the text editor (vi or emacs) and
+save the file as <tt>lab6_1.v</tt>.</p>
+
+<p>
+<b>Step 2:</b>
+Now you have a complete Verilog model, ready for testing.
+We compile and run above code with VCS.
+Use the following Unix command in the department Sun machine (sun.cs.tamu.edu)
+</p>
+
+<blockquote>
+<pre>
+$ vcs -R lab6_1.v
+</pre>
+</blockquote>
+
+<p>You should get the following output in the window.
+If you do not,
+then you probably have one or more typing errors in your input file.
+Correct them, and try again. Note that there is <u>a semi-colon at the end of the module statement</u>.</p>
+
+<blockquote>
+<pre>
+*** Using loader /usr/ccs/bin/ld instead of cc ...
+                         Chronologic VCS (TM)
+          Version Y-2006.06-SP1 -- Mon Feb 10 12:00:00 2008
+               Copyright (c) 1991-2006 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+Parsing design file 'lab6_1.v'
+Top Level Modules:
+       test_first
+No TimeScale specified
+Starting vcs inline pass...
+1 module and 0 UDP read.
+recompiling module test_first because:
+        This module or some inlined child module(s) has/have been modified.
+if [ -x ../simv ]; then chmod -x ../simv; fi
+/usr/ccs/bin/ld  -o ../simv  /opt/apps/synopsys/vcs/sparcOS5/lib/crt1.o
+/opt/apps/synopsys/vcs/sparcOS5/lib/crti.o
+5NrI_d.o 5NrIB_d.o P0Zc_1_d.o SIM_l.o  
+/opt/apps/synopsys/vcs/sparcOS5/lib/libvirsim.a -lnsl -lsocket -ldl    
+/opt/apps/synopsys/vcs/sparcOS5/lib/libvcsnew.so 
+-lm -lc  -ldl  /opt/apps/synopsys/vcs/sparcOS5/lib/crtn.o
+../simv up to date
+Chronologic VCS simulator copyright 1991-2005
+Contains Synopsys proprietary information.
+Compiler version Y-2006.06-SP1; Runtime version Y-2006.06-SP1;  Feb 10 12:00 2008
+
+                   0    a=0     b=0     out=1
+                   1    a=0     b=1     out=1
+                   2    a=1     b=0     out=0
+                   3    a=1     b=1     out=1
+$finish at simulation time                    4
+           V C S   S i m u l a t i o n   R e p o r t
+Time: 4
+CPU Time:      0.140 seconds;       Data structure size:   0.0Mb
+Mon Feb 10 12:00:00 2008
+CPU time: 0 seconds to compile + 0 seconds to link + 0 seconds in simulation
+</pre>
+</blockquote>
+
+<p>Use "-R" option if you want to run your code after compilation. 
+Without "-R" option, you need to run the compiled executable code separately.
+The compiled executable code is saved as "simv" without "-o" option. However, you can specify the output file name with "-o" option.
+</p>
+
+<p>You can find more information about VCS
+<a href='../reference/vcs.html'>here</a>.</p>
+
+<p><span style='color:red'>Check-off Requirement:</span> No</p>
+
+<hr>
+
+<h3>2. Half Adder [10 points]</h3>
+<p>
+A half-adder is a combinational circuit that adds
+two 1-bit inputs (<tt>A</tt> and <tt>B</tt>), and
+generates 1-bit sum (<tt>S</tt>) and 1-bit carry (<tt>C</tt>).
+The truth-table and the circuit diagram for the half-adder are shown below:</p>
+
+<table align="center" border="1">
+	<tr><td><table align=center border=0 cellspacing=10>
+	  <tr>
+	    <td><table border=0 cellspacing=0 cellpadding=0>
+		<tr align=center>
+		  <th style='width:24;border-top:solid;border-bottom:solid;border-left:solid;'>A</th>
+		  <th style='width:24;border-top:solid;border-bottom:solid;border-right:solid'>B</th>
+		  <th style='width:24;border-top:solid; border-bottom:solid'>S</th>
+		  <th style='width:24;border-top:solid;border-bottom:solid;border-right:solid;'>C</th>
+		</tr>
+		<tr align=center><td style='border-left:solid'>0</td><td style='border-right:solid'>0</td><td>0</td><td style='border-right:solid'>0</td></tr>
+		<tr align=center><td style='border-left:solid'>0</td><td style='border-right:solid'>1</td><td>1</td><td style='border-right:solid'>0</td></tr>
+		<tr align=center><td style='border-left:solid'>1</td><td style='border-right:solid'>0</td><td>1</td><td style='border-right:solid'>0</td></tr>
+		<tr align=center><td style='border-left:solid'>1</td><td style='border-right:solid'>1</td><td>0</td><td style='border-right:solid'>1</td></tr>
+		<tr align=center><td style='border-top:solid' colspan="4">&nbsp </td></tr>
+	    </table></td>
+	    <td valign="top"><img src='files/180px-Half_Adder_svg.png'></td>
+	  </tr>
+	  <tr align=center><td>(a) Truth Table</td><td>(b) Circuit Diagram</td>
+	  </tr>
+	</table></td></tr>
+</table>
+</p>
+
+<p>
+Structurally define a half-adder and prepare a proper test bench to test the half-adder.
+Save your code as "lab6_2.v" and evaluate your design with VCS.
+Test this module completely
+since you will be using it as a building block for the full-adder.
+Show the results of the all possible cases in the truth-table.
+</p>
+
+<p><span style='color:red'>Check-off Requirement:</span> Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<h3>3. Full Adder composed of NAND Gates Only [20 points]</h3>
+<p>
+Structurally define a 1-bit full adder using <a href="http://en.wikipedia.org/wiki/NAND_gate">NAND gates</a> only.
+The truth table for the full-adder and the schematic with two half adders are shown below:</p>
+
+<table align="center" border="1">
+	<tr><td><table align=center border=0 cellspacing=1 cellpadding=10>
+	  <tr>
+	    <td align=center><table border=0 cellspacing=0 cellpadding=0>
+		<tr align=center>
+		  <th style='width:30;border-top:solid;border-bottom:solid;border-left:solid;'>A</th>
+		  <th style='width:30;border-top:solid;border-bottom:solid;'>B</th>
+		  <th style='width:30;border-top:solid;border-bottom:solid;border-right:solid;'>Cin</th>
+		  <th style='width:30;border-top:solid; border-bottom:solid'>S</th>
+		  <th style='width:30;border-top:solid;border-bottom:solid;border-right:solid'>Cout</th>
+		<tr align=center><td style='border-left:solid;'>0</td><td>0</td><td style='border-right:solid'>0</td><td>0</td><td style='border-right:solid;'>0</td></tr>
+		<tr align=center><td style='border-left:solid;'>0</td><td>0</td><td style='border-right:solid'>1</td><td>1</td><td style='border-right:solid;'>0</td></tr>
+		<tr align=center><td style='border-left:solid;'>0</td><td>1</td><td style='border-right:solid'>0</td><td>1</td><td style='border-right:solid;'>0</td></tr>
+		<tr align=center><td style='border-left:solid;'>0</td><td>1</td><td style='border-right:solid'>1</td><td>0</td><td style='border-right:solid;'>1</td></tr>
+		<tr align=center><td style='border-left:solid;'>1</td><td>0</td><td style='border-right:solid'>0</td><td>1</td><td style='border-right:solid;'>0</td></tr>
+		<tr align=center><td style='border-left:solid;'>1</td><td>0</td><td style='border-right:solid'>1</td><td>0</td><td style='border-right:solid;'>1</td></tr>
+		<tr align=center><td style='border-left:solid;'>1</td><td>1</td><td style='border-right:solid'>0</td><td>0</td><td style='border-right:solid;'>1</td></tr>
+		<tr align=center><td style='border-left:solid;'>1</td><td>1</td><td style='border-right:solid'>1</td><td>1</td><td style='border-right:solid;'>1</td></tr>
+		<tr><td style='border-top:solid' colspan="5">&nbsp </td></tr>
+	    </table></td>
+	    <td valign="top"><img src='files/400px-Full_Adder_svg.png'></td>
+	    <!--td valign+"top"><img src="files/fulladderNAND.png"></td-->
+	  </tr>
+	  <tr align=center><td>(a) Truth Table</td><td>(b) Circuit Diagram</td><!--td>(c) Circuit Diagram of NAND-only Full Adder</td-->
+	  </tr>
+	</table></td></tr>
+</table>
+
+<table align="center" border="1" cellpadding="10">
+  <tr>
+    <td valign="top"><img src="files/fulladderNAND.png"></td>
+  </tr>
+  <tr>
+    <td align="center">(c) Circuit Diagram of NAND-only Full Adder</td>
+  </tr>
+</table>
+
+<p>Prepare a proper test bench to test the full-adder.
+Save your code as "lab6_3.v" and evaluate your design with VCS.
+Test this module completely
+since you will be using it as a building block for your multi-bit adders.
+Show the results of the all possible cases in the truth-table.</p>
+
+<p><span style='color:red'>Check-off Requirement:</span> Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<h3>4. Multi-bit Ripple Carry Adder [20 points]</h3>
+
+<p>Your designs so far have been single bit with 1-bit ports, wires and registers.
+To model multi-bit objects, you may specify the size when declaring the object.
+For example, a 4-bit wide wire can be declared as:</p>
+
+<blockquote>
+<pre>
+	wire [3:0] S;
+</pre>
+</blockquote>
+
+<p>In the same way, 4-bit wide registers can be declared as:</p>
+
+<blockquote>
+<pre>
+	reg [3:0] A, B;
+</pre>
+</blockquote>
+
+<p>The same may be done for inputs and outputs.
+You can also access the individual bit lines or a sub-group of the bit-lines.</p>
+
+<blockquote>
+<pre>
+	A[0]	// The least significant bit in A
+	A[3:2]	// The two most significant bits in A
+</pre>
+</blockquote>
+
+<p>Develop a 4-bit ripple carry adder using multi-bit declarations
+with the 1-bit full-adder you developed earlier.
+Prepare a proper test bench for this new module.
+Save your code as "lab6_4.v" and evaluate your design with VCS.</p>
+
+<p>The circuit diagram of the 4-bit ripple carry adder is shown below.</p>
+
+<table align=center border=1 cellspacing=1 cellpadding=10>
+  <tr align=center><td><img src='files/4-bit_ripple_carry_adder-2.png'></td></tr>
+  <tr align=center><td>4-bit Ripple Carry Adder Circuit Diagram</td></tr>
+</table>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS with the following cases.
+Printing input/output numbers in the test bench
+must be formatted in a decimal format.</p>
+
+<table align="center" border="1" width="500">
+        <tr>
+                <td width="25%" align="center">Case #</td>
+                <td width="25%" align="center"><b>A</b></td>
+                <td width="25%" align="center"><b>B</b></td>
+                <td align="center"><b>C0</b></td>
+        </tr>
+        <tr>
+                <td align="center">1</td><td align="center">0</td><td align="center">0</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">2</td><td align="center">0</td><td align="center">0</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">3</td><td align="center">0</td><td align="center">1</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">4</td><td align="center">1</td><td align="center">0</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">5</td><td align="center">1</td><td align="center">1</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">6</td><td align="center">1</td><td align="center">1</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">7</td><td align="center">7</td><td align="center">7</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">8</td><td align="center">7</td><td align="center">7</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">9</td><td align="center">15</td><td align="center">0</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">10</td><td align="center">15</td><td align="center">0</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">11</td><td align="center">15</td><td align="center">1</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">12</td><td align="center">15</td><td align="center">1</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">13</td><td align="center">0</td><td align="center">15</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">14</td><td align="center">0</td><td align="center">15</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">15</td><td align="center">1</td><td align="center">15</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">16</td><td align="center">1</td><td align="center">15</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">17</td><td align="center">15</td><td align="center">15</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">18</td><td align="center">15</td><td align="center">15</td><td align="center">1</td>
+        </tr>
+</table>
+
+<p align="center"><b>Table: Test Cases in 4-bit adders</b></p>
+
+<p>Use the following code in your test bench for the test cases in 4-bit adders</p>
+
+<blockquote>
+<pre>
+	initial begin
+		$monitor($time, "\tA=%d\tB=%d\tCin=%b\tS=%d\tCout=%b", A, B, C0, S, Cout);
+		
+		A = 0;	B = 0;	C0 = 0;
+		#1
+		A = 0;	B = 0;	C0 = 1;
+		#1
+		A = 0;	B = 1;	C0 = 0;
+		#1
+		A = 1;	B = 0;	C0 = 0;
+		#1
+		A = 1;	B = 1;	C0 = 0;
+		#1
+		A = 1;	B = 1;	C0 = 1;
+		#1
+		A = 7;	B = 7;	C0 = 0;
+		#1
+		A = 7;	B = 7;	C0 = 1;
+		#1
+		A = 15;	B = 0;	C0 = 0;
+		#1
+		A = 15;	B = 0;	C0 = 1;
+		#1
+		A = 15;	B = 1;	C0 = 0;
+		#1
+		A = 15;	B = 1;	C0 = 1;
+		#1
+		A = 0;	B = 15;	C0 = 0;
+		#1
+		A = 0;	B = 15;	C0 = 1;
+		#1
+		A = 1;	B = 15;	C0 = 0;
+		#1
+		A = 1;	B = 15;	C0 = 1;
+		#1
+		A = 15;	B = 15;	C0 = 0;
+		#1
+		A = 15;	B = 15;	C0 = 1;
+		#1
+		$finish;
+	end
+
+</pre>
+</blockquote>
+
+<hr>
+
+<h3>5. Decoder and Multiplexer [20 points]</h3>
+
+<p>(1) Design and structurally define a <u>3x8 decoder</u> and a 1-bit full adder in Verilog
+using a decoder as a basic building block.
+Use the 3x8 decoder you developed to replace the full adder.
+Prepare a proper test bench module to test all possible cases and evaluate your design.
+Save your code as "lab6_5dec.v" and run it with VCS.</p>
+
+<p>(2) Design and structurally define a <u>4x1 multiplexer</u> and a 1-bit full adder in Verilog 
+using two multiplexers as a basic building block. 
+Use the 4x1 multiplexer you developed to replace the full adder.
+Prepare a proper test bench module to test all possible cases and evaluate your design.
+Save your code as "lab6_5mux.v" and run it with VCS.</p>
+
+<p>The following figure shows how to define a full-adder
+using a decoder or two 4x1 multiplexers.</p>
+
+
+<table align=center border=1 cellspacing=1 cellpadding=10>
+  <tr align=center><td><img src='files/image004.gif'></td></tr>
+  <tr align=center><td>Full Adder Implemented by a Decoder and two Multiplexers </td></tr>
+</table>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<h3>6. 32-bit Ripple Carry Adder [30 points]</h3>
+
+<p>Design and structurally define a 32-bit adder using 
+a 4-bit full adder you developed in Part 4 and prepare a proper test bench
+Save your code as "lab6_6.v" and evaluate your design with VCS.</p>
+
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS with the following cases.
+Printing input/output numbers in the test bench
+must be formatted in a decimal format.</p>
+
+<table align="center" border="1" width="500">
+        <tr>
+                <td width="25%" align="center">Case #</td>
+                <td width="25%" align="center"><b>A</b></td>
+                <td width="25%" align="center"><b>B</b></td>
+                <td align="center"><b>C0</b></td>
+        </tr>
+        <tr>
+                <td align="center">1</td><td align="center">0</td><td align="center">0</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">2</td><td align="center">0</td><td align="center">0</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">3</td><td align="center">0</td><td align="center">1</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">4</td><td align="center">1</td><td align="center">0</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">5</td><td align="center">1</td><td align="center">1</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">6</td><td align="center">1</td><td align="center">1</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">7</td><td align="center">16777215</td><td align="center">16777215</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">8</td><td align="center">16777215</td><td align="center">16777215</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">9</td><td align="center">4294967295</td><td align="center">0</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">10</td><td align="center">4294967295</td><td align="center">0</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">11</td><td align="center">4294967295</td><td align="center">1</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">12</td><td align="center">4294967295</td><td align="center">1</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">13</td><td align="center">0</td><td align="center">4294967295</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">14</td><td align="center">0</td><td align="center">4294967295</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">15</td><td align="center">1</td><td align="center">4294967295</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">16</td><td align="center">1</td><td align="center">4294967295</td><td align="center">1</td>
+        </tr>
+        <tr>
+                <td align="center">17</td><td align="center">4294967295</td><td align="center">4294967295</td><td align="center">0</td>
+        </tr>
+        <tr>
+                <td align="center">18</td><td align="center">4294967295</td><td align="center">4294967295</td><td align="center">1</td>
+        </tr>
+</table>
+
+<p align="center"><b>Table: Test Cases for 32-bit adders</b></p>
+
+<p>Use the following code in your test bench for the test cases in 32-bit adders</p>
+
+<blockquote>
+<pre>
+	initial begin
+		$monitor($time, "\tA=%d\tB=%d\tCin=%b\tS=%d\tCout=%b", A, B, C0, S, Cout);
+		
+		A = 0;		B = 0;		C0 = 0;
+		#1
+		A = 0;		B = 0;		C0 = 1;
+		#1
+		A = 0;		B = 1;		C0 = 0;
+		#1
+		A = 1;		B = 0;		C0 = 0;
+		#1
+		A = 1;		B = 1;		C0 = 0;
+		#1
+		A = 1;		B = 1;		C0 = 1;
+		#1
+		A = 16777215;	B = 16777215;	C0 = 0;
+		#1
+		A = 16777215;	B = 16777215;	C0 = 1;
+		#1
+		A = 4294967295;	B = 0;		C0 = 0;
+		#1
+		A = 4294967295;	B = 0;		C0 = 1;
+		#1
+		A = 4294967295;	B = 1;		C0 = 0;
+		#1
+		A = 4294967295;	B = 1;		C0 = 1;
+		#1
+		A = 0;		B = 4294967295;	C0 = 0;
+		#1
+		A = 0;		B = 4294967295;	C0 = 1;
+		#1
+		A = 1;		B = 4294967295;	C0 = 0;
+		#1
+		A = 1;		B = 4294967295;	C0 = 1;
+		#1
+		A = 4294967295;	B = 4294967295;	C0 = 0;
+		#1
+		A = 4294967295;	B = 4294967295;	C0 = 1;
+		#1
+		$finish;
+	end
+</pre>
+</blockquote>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+Turn in all of your source code. (lab6_2.v lab6_3.v lab6_4.v lab6_5dec.v lab6_5mux.v lab6_6.v)
+
+</body>
+
+</html>
