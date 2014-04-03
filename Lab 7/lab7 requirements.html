@@ -1,0 +1,425 @@
+
+<!-- saved from url=(0062)http://students.cse.tamu.edu/wanglei/csce350/handout/lab7.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>CSCE 350: Computer Architecture and Design</title>
+<style type="text/css"></style></head>
+
+<body lang="EN-US" link="blue" vlink="blue">
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">
+CSCE 350: Computer Architecture and Design, Spring 2014</span></b></p>
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">Lab 7 (Total 100 points)</span></b></p>
+
+<hr>
+
+<h3>1. SR-Latch [0 point]</h3>
+<p>
+The SR-latch is the simplest memory element that can be constructed
+from standard logic gates. It consists of a pair of NOR (or NAND) gates,
+connected as shown in the figures below. The cross-coupling of the gates
+creates a feedback loop that allows the output of the system to settle
+to an 1-bit value, i.e., 1-bit values are stored in the system as
+the current state.
+The stored value is output on the line Q, and
+its inverse on Q'. We can store a new value in the latch simply
+by "pulsing" one of the two input lines.
+Pulsing an input line means to momentarily assert
+(i.e., gives a logically high or "1" value to) the input.
+Thus, an input line is pulsed if it is asserted and then de-asserted.
+SR-latch has two inputs, <b><i>Set</i></b> and <b><i>Reset</i></b>.
+When neither Set nor Reset is asserted,
+the latch simply outputs whatever value was previously stored in it.
+</p>
+
+<p>
+If we now pulse the Set input, the latch will store the value "1",
+and will output "1" on output line Q (and "0" on Q').
+After the pulse, the latch continues to remember and output the value "1".
+Similarly, pulsing Reset will cause the latch to remember and output "0".
+Thus, the latch remembers whichever input line was most recently pulsed.
+Set and Reset should never be pulsed at the same time; this is an illegal
+combination of inputs for the SR-latch.
+The following Verilog module shows an SR-latch:
+</p>
+
+<blockquote>
+<pre>module SRlatch (q, qbar, set, reset);
+    output q, qbar;
+    input set, reset;
+
+    nor #1 (q, qbar, reset);
+    nor #1 (qbar, q, set);
+endmodule
+</pre>
+</blockquote>
+
+<p>
+Note that the module is defined structurally (i.e. with gates only),
+and that both NOR gates have been given a non-zero propagation delay
+(the <tt>#1</tt> does this).
+</p>
+
+<p>
+<b>Propagation delay:</b>
+The propagation delay of a circuit is the time it elapses
+between a change of an input to propagate and change the output of this circuit.
+In Verilog and other HDLs, propagation delays must be modeled
+in a gate-level sequential circuit to make it behave properly.
+Propagation delay is optional for combinational circuits
+but it may have to be considered for the proper simulation of the circuit.
+</p>
+
+<p>
+Create a new file, <tt>lab7_1.v</tt>, and type the SR-latch into this file.
+Add the following test module:
+</p>
+
+<blockquote>
+<pre>module testSR(q, qbar, set, reset);
+    input q, qbar;
+    output set, reset;
+    reg set, reset;
+
+    initial begin
+        $monitor ($time," q = %d, qbar = %d, set = %d, reset = %d",q, qbar, set, reset);
+        set = 0; reset = 0;
+        #100 
+        set = 1; 
+        #100 
+        set = 0;		/* Set pulse at $time==100 */
+        #100 
+        reset = 1;
+        #100 
+        reset = 0;		/* Reset pulse */
+        #100
+        set = 1;
+        #100 
+        set = 0;		/* Set pulse again */
+        #100 
+        reset = 1;
+        #100 
+        reset = 0;		/* Reset pulse again */
+        #100 
+        $finish;		/* Finish simulation */
+    end
+endmodule
+
+module testBench;
+    wire q, qbar, set, reset;
+    SRlatch l(q, qbar, set, reset);
+    testSR t(q, qbar, set, reset);
+endmodule
+</pre>
+</blockquote>
+
+<p>
+In the test module both Set and Reset are de-asserted at simulation time zero.
+After a delay of 100 time steps, Set is asserted.
+After another delay of 100, Set is de-asserted and so on.
+</p>
+
+<p>
+<b>Value "x":</b>
+In Verilog, when the value of a variable is "x",
+the value is undetermined, meaning that the value could be either "0" or "1".
+When two variables containing "x" and "0" are the inputs to a NOR gate,
+the gate output must be "x",
+because we do not know what the correct output of the gate should be.
+On the other hand, if the two inputs are "x" and "1",
+the NOR gate output will be "0", not "x",
+because in this case the input "1" is a controlling input.
+</p>
+
+<table align="center" border="1" width="650" cellpadding="10">
+<tbody><tr align="center"><td><img src="./Lab 7_files/image005.gif"></td></tr>
+<tr align="center"><td><b>(a) SR-latch with NOR gates</b></td></tr>
+</tbody></table>
+<table align="center" border="1" width="650" cellpadding="10">
+<tbody><tr align="center"><td><img src="./Lab 7_files/image006.gif"></td></tr>
+<tr align="center"><td><b>(b) SR-latch with NAND gates</b></td></tr>
+</tbody></table>
+<table align="center" border="1" width="650" cellpadding="10">
+<tbody><tr align="center"><td><img src="./Lab 7_files/image007.gif"></td></tr>
+<tr align="center"><td><b>(c) SR-latch with NAND gates and a control input</b></td></tr>
+</tbody></table>
+
+<p><span style="color:red">Check-off Requirement:</span> No</p>
+
+<hr>
+
+<h3>2. D-Latch [10 points]</h3>
+<b>Structural modeling of D-latch</b>
+
+<p>
+To implement and simulate the MIPS processor,
+we will need a memory element that changes its state only when a change is permitted,
+not just any time its inputs change. One such device is D-latch.
+</p>
+
+<p>
+As you can see in the figure below,
+a D-latch is built from an SR-latch and two AND gates.
+D-latch overcomes both drawbacks of SR-latch:
+it has a single data input, D, rather than two inputs, Set and Reset.
+This prevents the illegal input combination of both Set and Reset asserted.
+D-latch has a clock input, which determines when the memory element is permitted
+to change the state.
+A clock is a free-running periodic signal that alternates
+between high ("1") and low ("0") signal levels.
+The time needed for the clock to complete one full cycle
+(e.g., change from low to high, high to low, and then back to high)
+is called a clock cycle denoted by Tcc.
+Clock cycles are also known as clock periods,
+or sometimes just "clocks" for short.
+The exact instant when the clock jumps from a "1" to a "0"
+is called a negative clock edge (or falling or trailing).
+The instant the clock jumps from a "0" to a "1" is called a positive clock edge (or rising or leading).
+</p>
+
+<p>
+In D-latch, the pair of AND gates are used to "guard" the embedded SR-latch
+by prohibiting the SR-latch's inputs from being pulsed unless the clock signal is "1".
+When the clock signal is "0", the latch's output cannot be changed,
+regardless of the value of latch's D input.
+Thus, D-latch can be updated only when the clock signal permits.
+</p>
+
+<b>Clock Signal Generator</b>
+
+<p>
+In Verilog a clock signal is easily provided using behavioral modeling.
+The following module shows an <tt>m555</tt> "timer" (clock) chip,
+which we will use whenever we need a clock signal. <u>Do not modify any given code.</u>
+</p>
+
+<blockquote>
+<pre>module m555(clock);
+    parameter InitDelay = 10, Ton = 50, Toff = 50;
+    output clock;
+    reg clock;
+
+    initial begin
+        #InitDelay clock = 1;
+    end
+
+    always begin
+        #Ton clock = ~clock;
+        #Toff clock = ~clock;
+    end
+endmodule
+</pre>
+</blockquote>
+
+<p>
+The <tt>m555</tt> module declares a single output, clock,
+which is defined to be an 1-bit Verilog register.
+Recall that the <tt>always</tt> keyword defines a Verilog thread of control,
+which loops forever updating the clock once every time through the loop.
+The clock cycle time is defined to be 100 time steps.
+The <tt>initial</tt> keyword defines another thread
+that executes only once at $time=0,
+to initialize the clock register.
+</p>
+
+<p>
+Below is the test module for D-latch. Add the test module to your D-latch implementation file. <u>Do not modify any given code.</u>
+</p>
+
+<blockquote>
+<pre>module testD(q, qbar, clock, data);
+    input  q, qbar, clock;
+    output data;
+    reg    data;
+
+    initial begin
+        $monitor ($time, " q = %d, qbar = %d, clock = %d, data = %d", q, qbar, clock, data);
+        data = 0;
+        #25  
+        data = 1;
+        #100 
+        data = 0;
+        #50 
+        data = 1;
+        #50 
+        data = 0;
+        #100 
+        data = 1;
+        #50 
+        data = 0;
+        #50 
+        data = 1;
+        #100
+        $finish; /* $finish simulation after 100 time simulation units */
+    end
+endmodule
+
+module testBenchD;
+    wire clock, q, qbar, data;
+    m555 clk(clock);
+    Dlatch dl(q, qbar, clock, data);
+    testD td(q, qbar, clock, data);
+endmodule
+</pre>
+</blockquote>
+
+<p>Implement D-latch shown below. All NAND gates have one cycle delay. Save your code as "lab7_2.v" and evaluate your design in VCS</p>
+
+<table align="center" border="1" width="650" cellpadding="10">
+<tbody><tr align="center"><td><img src="./Lab 7_files/d-latch.png"></td></tr>
+<tr align="center"><td><b>D-latch based on an SR-latch with NAND gates</b></td></tr>
+</tbody></table>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<h3>3. D-FF (Flip Flop) [20 points]</h3>
+<b>Structural modeling of D-FF</b>
+
+<p>
+A D-latch is an example of a level-triggered memory device.
+As long as the clock input is at "1",
+the latch is "open" and will read and store the data input.
+When the clock goes to "0", the latch is "closed",
+and the output is not affected by any changes in the data input.
+We need a memory element that can only be changed at particular specified moments.
+Instead of a level-triggered device that is open for half the clock cycle,
+we use a device that can be updated only at those brief instants
+when the clock jumps from one level to another.
+A clock transition from "1" to "0" is called a negative clock edge (or falling edge),
+and we want our memory element to update only when a negative clock edge occurs
+(edge-triggered not level-triggered).
+We can construct a negative edge-triggered D-FF from two level-triggered D-latches,
+as shown below.
+These two D-latches work in a master-slave mode.
+An inverter negates the clock input to the second latch,
+so only one latch can be open at any time.
+When the clock signal is "1", the first latch is open and accepts a new value,
+but the second latch is closed.
+When a negative edge of the clock occurs,
+the first latch closes and the second one opens, reading the value stored in the first latch.
+</p>
+
+<p>
+Below is the test module for D-FF. Add the test module to your D-FF implementation file. <u>Do not modify any given code.</u>
+</p>
+
+<blockquote>
+<pre>module testD(q, qbar, clock, data);
+    input  q, qbar, clock;
+    output data;
+    reg    data;
+
+    initial begin
+        $monitor ($time, " q = %d, qbar = %d, clock = %d, data = %d", q, qbar, clock, data);
+        data = 0;
+        #25  
+        data = 1;
+        #100 
+        data = 0;
+        #50 
+        data = 1;
+        #50 
+        data = 0;
+        #100 
+        data = 1;
+        #50 
+        data = 0;
+        #50 
+        data = 1;
+        #100
+        $finish; /* $finish simulation after 100 time simulation units */
+    end
+endmodule
+
+module testBenchD;
+    wire clock, q, qbar, data;
+    m555 clk(clock);
+    DFF dff(q, qbar, clock, data);
+    testD td(q, qbar, clock, data);
+endmodule
+</pre>
+</blockquote>
+
+<p>Implement an 1-bit D-FF using two D-latches shown below.
+Save your code as "lab7_3.v" and evaluate your design with VCS.</p>
+
+<table align="center" border="1" cellpadding="10">
+<tbody><tr align="center"><td><img src="./Lab 7_files/d-ff.png"></td></tr>
+<tr align="center"><td><b>Edge-triggered D-FF based on D-latches</b></td></tr>
+</tbody></table>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<h3>4. D-FF with Preset and Clear [30 points]</h3>
+<p>
+Extend the capabilities of the base D-FF with the Load (also called Write Enable),
+Preset and Clear capability.
+Let's call this D-FF-PC.
+The D-FF-PC will have the additional ports:
+Write_en, Preset_b and Clear_b.
+The Write_en line is set (to 1) only when we want to allow the D-FF-PC to sample
+and store its current input D in its storage (Q, and Q') by gating the input in each D-latch.
+The actual storing of the current input takes place
+when the clock signal CLK makes the HIGH to LOW transition (negative clock edge).
+The Clear_b signal is set to "active low" (i.e., 0) value
+when we want to set of the D-FF-PC to <u>0 (Q = 0, and Q' = 1)</u>.
+Similarly, the Preset_b is set to "active low" (0) signal value
+when we want to preset the D-FF-PC to <u>1 (Q = 1, and Q' = 0)</u>.
+Both Clear_b and Preset_b are <u>asynchronous</u> and have precedence over the current clock signal CLK and Write_en. 
+Thus, they directly change the output.
+However, they can not be active at the same time.
+You must implement D-FF-PC with basic gates in gate-level design.
+<u>Do not use any reserved Verilog keyword in module D-FF-PC.</u></p>
+
+<p>Copy <a href="lab7_4incompleted.v">lab7_4incompleted.v</a> and 
+complete an 1-bit D-FF with Preset and Clear.
+Use the pre-defined test module in this file. <u>Do not modify any given code.</u> 
+Save your code as "lab7_4.v" and evaluate your design with VCS.</p>
+ 
+<table align="center" border="1" cellpadding="10">
+<tbody><tr align="center"><td><img src="./Lab 7_files/image010.gif"></td></tr>
+<tr align="center"><td><b>D-FF with Load, Preset, and Clear</b></td></tr>
+</tbody></table>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<h3>5. Registers from D-FF with Preset and Clear [40 points]</h3>
+<p>
+An <i>n</i>-bit register consists of <i>n</i> 1-bit storage elements.
+Each storage element is a 1-bit D-FF with Load (Write_en), asynchronous Preset and Clear signals.
+All FFs are fed with a common clock signal CLK,
+Write_en, and asynchronous Clear_b (active low) and Preset_b (active low) signals, as explained earlier.
+</p>
+
+<p>Copy <a href="lab7_5incompleted.v">lab7_5incompleted.v</a> and 
+complete a <i>32</i>-bit register with <i>32</i> 1-bit D-FFs with Preset, Clear, and Parallel Load developed in the previous section.
+Use the pre-defined test module in this file. <u>Do not modify any given code.</u> 
+Save your code as "lab7_5.v" and evaluate your design with VCS.
+</p>
+<!--
+<p><span style='color:red'>Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS.</p>
+-->
+<hr>
+
+<p><b>Submission Requirement</b></p>
+Turn in all of your source code. (lab7_2.v lab7_3.v lab7_4.v lab7_5.v)
+
+
+
+
+</body></html>

@@ -1,0 +1,283 @@
+
+<!-- saved from url=(0071)http://students.cse.tamu.edu/msahn/csce350-sp2011/handout/project2.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>CSCE 350: Computer Architecture and Design</title>
+</head>
+
+<body lang="EN-US" link="blue" vlink="blue">
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">Project 2</span></b></p>
+
+<hr>
+
+<h3>1. Objective</h3>
+
+<p>In this project, you will build a single-cycle
+processor, which executes a given subset of the MIPS instruction set. The
+processor includes a data-path and a control unit, and is similar to the one
+discussed in class. During demonstration of your project
+various MIPS test programs will be used for verification of your work. This
+project will rely on the behavioral Verilog features
+but you are allowed to use structural designs, if desired.</p>
+
+<h3>2. Control Unit Design</h3>
+
+<p>Control unit in the processor controls all components'
+behavior, so you should completely understand how the control units work in the
+processor. Chapter 5.4 explains this in detail. As described in the <u>Figure
+5.24</u> in the textbook (3rd Edition), your processor will have two control units, (1) a main control unit and (2) an
+ALU control unit. You are strongly recommended to read the chapter carefully before you attempt to implement something.</p>
+
+<h3>3. Datapath Design</h3>
+
+<p>You should implement all components you need in Verilog. You may use behavioral or any combination of
+behavioral and structural Verilog features. All Verilog models should correspond to realistic components,
+such as, registers, comparators, shifters, etc. No super-composite components
+are allowed. For example, a branch unit that takes in the opcode,
+operands, and PC, and outputs a new PC, or something similar to that is not
+permitted. You will be given a number of basic datapath
+components which you may use or extend. It is not mandatory to use the given
+components, but you can use them as examples for designing your own. All
+storage elements should be negative-edge triggered.</p>
+
+<h3>3.1 Datapath Components</h3>
+
+<p>There are a few components you will need for your processor,
+including the following. You may start by designing these sub-components:</p>
+
+<blockquote>
+<pre><b>ALU</b>: 32-bit ALU,
+<b>Extender</b>: sign/zero extender,
+<b>Register File</b> regfile: register file,
+<b>Shifter</b>: Arithmetic logical, multi-bit shifting unit,
+<b>Instruction Memory</b>: 2K-words deep, 32-bit wide, initial content will be loaded from the Verilog code,
+<b>Data Memory</b>: 4K-words deep, 32-bit wide, no initial contents. <u>This part can be implemented in Project 3.</u>
+</pre>
+</blockquote>
+
+<h3>3.2 Provided Components</h3>
+
+<p>
+A number of data-path components are provided
+as examples of building larger behavioral constructs in Verilog.
+You may use these components.
+The following files are available <a href="./files/project2">here</a>
+(accessible inside .tamu.edu domain): (If you have a problem to access those file, contact TA.)
+</p>
+
+<ul>
+ <li>SingleCycleProc.v: A skeleton module for your
+     processor. You need to fill in the missing parts of this file to complete
+     the processor. Note that the current test module "testCPU" is designed for Project 3.
+     You need to change this module to run with the provided
+     <a href="files/project2/imeminit_simple_test.v">simple diagnostic program</a>.</li>
+ <li>ALU_behav.v: A behavioral implementation of the ALU you
+     would need for this project.</li>
+ <li>signextend.v: A sign extender.</li>
+ <li>lshift2.v: A left-shift-by-two module.</li>
+ <li>IdealMemory.v, dmeminit.v, imeminit.v: A behavioral implementation of the ideal
+     data and instruction memories, and files to initialize their contents. We
+     will provide additional memory contents files later for evaluation and
+     test purposes.</li>
+ <li>mux.v: Multiplexors of various sizes.</li>
+</ul>
+
+<p>Finish the implementation of the processor by supplying or
+completing all necessary modules. You may use any Verilog
+structural or behavioral language construct.</p>
+
+<h3>4. Component Propagations Delays</h3>
+
+<p>The single data-path must incorporate reasonable propagation
+delay amounts for each one of each component. You need to specify propagation
+delays for both combinational and sequential circuits. Finally, you have to
+find and use the minimum possible clock periods T<sub>CC</sub> in your single
+data-paths.</p>
+
+<h3>4.1 Component Propagations Delays (Optional)</h3>
+
+<p>All of your Verilog components
+must, in general, incorporate "reasonable" propagation delays. For each
+component, think about how that component would be implemented using discrete
+gates. Use this mental discrete gate implementation to estimate the delays to
+use. There is no exact right or wrong answer for the delays to use. However, if
+the delays are too large or too small, you will be asked to justify your decision.
+The delay models may be kept simple, i.e., one delay value can be used for an
+entire component (which should be the maximum worst-case delay). For the datapath
+controller you should use a delay of 20&#916;T.
+You may use the following normalized delays for individual gates:</p>
+
+<table align="center" border="1">
+<tbody><tr>
+	<th align="center">Gate</th><th align="center">Delay in &#916;T</th>
+</tr>
+<tr>
+	<td align="center">NOT</td><td align="center">1</td>
+</tr>
+<tr>
+	<td align="center">NOR</td><td align="center">2</td>
+</tr>
+<tr>
+	<td align="center">NAND</td><td align="center">1</td>
+</tr>
+<tr>
+	<td align="center">OR</td><td align="center">3</td>
+</tr>
+<tr>
+	<td align="center">AND</td><td align="center">3</td>
+</tr>
+<tr>
+	<td align="center">XOR</td><td align="center">2</td>
+</tr>
+</tbody></table>
+
+<p>Please look through the Verilog
+code of the provided components for examples of how to specify propagation
+delays for the various components and how to support edge-triggered clocking.
+You should try to use reasonable delays for the blocks with storage elements.</p>
+
+<h3>4.2 Resetting and Initializing the Data-paths</h3>
+
+<p>Your data-paths must employ an active-low,
+master reset signal, called Reset_L. This signal should be kept at the
+de-asserted level at all times, except when the processor is being reset. To
+reset the processor, drive Reset_L low for at least 10 integral clock cycles
+TCC and then reset Reset_L to high level. The master
+reset should feed into all reset types of signals of the datapath,
+such as those of the register file. You have to
+provide a unit that is external to the main control units that contain at least
+one register called IPC. This register supplies the first Program Counter (PC)
+that your processor should execute after "reset" IPC and all other input
+control signals should be driven by the top level test module of your model.</p>
+
+<h3>5. Verilog Controller for the Datapath</h3>
+
+<h3>5.1 Complete Control Unit truth table</h3>
+
+<p>Make two complete truth tables considering all Instructions
+shown in Table 1; One for the main control unit and
+the other for the ALU control unit. Your table should be similar to Figure 5.18
+in the textbook (3rd Edition). An Excel file is recommended because the table can be big.</p>
+
+<h3>5.2 Construct Control Units</h3>
+
+<p>Build the Control Unit (CU) for the single-cycle datapath of Section 6. You may 
+use any behavioral Verilog instruction available to develop the CU. This CU
+should take the exact bits from the 32-bit instruction and generate the control
+signals. You must add any control signals necessary to read instructions of the
+instruction memory, and the "next instruction logic" to generate the Program
+Counter (PC) of the instruction which needs to be fetched next.</p>
+
+<p>You may use any behavioral Verilog
+statement available to develop the CU. The Verilog
+code that specifies the behavior of your CU must be as much structured and
+clearly written as possible. Use the Verilog <tt>`define SYMBOL code_to_substitute</tt>
+as much as possible and specify upper bounds for units as <tt>parameter n = ....</tt>
+Note: Recall that in the Single-Cycle Processor, everything should take place
+in one clock cycle T<sub>CC</sub>.</p>
+
+<h3>6. Basic Single-Cycle Data-Path</h3>
+
+<p>Develop an implementation in Verilog
+of a basic single-cycle processor (SCP) supporting the following instructions.</p>
+
+<table align="center" border="1">
+<tbody><tr>
+	<th align="center">Type</th><th align="center">Instructions</th>
+</tr>
+<tr>
+	<td align="center">Arithmetic (unsigned)</td><td align="center">addu, subu, addiu</td>
+</tr>
+<tr>
+	<td align="center">Arithmetic (signed)</td><td align="center">add, sub, addi</td>
+</tr>
+<!--tr>
+	<td align="center">Logical</td><td align="center">and, andi, or, ori, xor, xori</td>
+</tr>
+<tr>
+	<td align="center">Shift</td><td align="center">sll, sra, srl</td>
+</tr>
+<tr>
+	<td align="center">Compare</td><td align="center">slt, slti, sltu, sltiu</td>
+</tr>
+<tr>
+	<td align="center">Control</td><td align="center">beq, bne, blez, bltz, j, jr, jal</td>
+</tr>
+<tr>
+	<td align="center">Data transfer</td><td align="center">lw, sw, lui, lb, sb</td>
+</tr-->
+</tbody></table>
+
+<p>Use the actual MIPS machine language instruction formats,
+given in the back cover of your textbook.</p>
+
+<h3>6.1 Implementation Step 1: Program Counter (PC)</h3>
+
+<p>The first in this project is building PC register which holds the address of the current instruction. 
+Do not use <tt>startPC</tt> signal as PC, which is an input of the module <tt>SingleCycleProc</tt>, or do not attempt to modify startPC inside the module.
+The signal <tt>startPC</tt> is used to provide the starting address of a new program during a reset.
+You need to assign a new register named PC and then, copy <tt>startPC</tt> to PC when <tt>Reset_L</tt> is activated (low) or rising (positive edge).
+As the clock goes on, PC increases by 4 when <tt>Reset_L</tt> is not activated.</p><p>
+
+</p><h3>6.2 Implementation Step 2: Reading an Instruction (Fetch)</h3>
+
+<p>Once PC is determined, you can get an instruction from Instruction Memory module named <tt>InstrMem</tt>. 
+After fetching an instruction, store it into a new register <tt>IR</tt>.
+Before connecting this module, check whether the correct program file is included in <tt>IdealMemory.v</tt>. 
+In this project, we will use <a href="files/project2/imeminit_simple_test.v">imeminit_simple_test.v</a>.
+If you get an instruction, check the value in each region in the format using <tt>$display("rs = ... rd = ... rt = ... imm16 = ... func = ...");</tt>.
+Each component must be fed into the register module, the main control module, and other modules as shown in Figure 5.24 in the textbook (3rd Edition) page 314.</p><p>
+
+</p><h3>6.3 Implementation Step 3: Building a Register file</h3>
+
+<p>MIPS architecture has a register file containing 32 32-bit registers. 
+Each register is read using one of two read register ports and written with one write register port. 
+Register write is enabled only when RegWrite signal is on.</p>
+
+<h3>6.4 Implementation Step 4: Building Control Units</h3>
+
+<p>The behavior of the processor is controlled by controllers.
+There are two control units in MIPS architecture.
+One is general controller controling MUXes, the register file, and the memory. The other is ALU controller controlling ALU.
+Since the operation is determined by the instruction, these controllers need information from the instruction.</p>
+
+
+<h3>7. Testing and Diagnostic Programs</h3>
+
+<p>We will provide you with <a href="files/project2/imeminit_simple_test.v">a simple diagnostic program</a> to test
+your datapath and control units. You need to run the
+program using your processor and display the all internal states of a module by
+using appropriately coded <tt>$display("...");</tt>
+statements from within the module. For instance, you can use <tt>$display("Reg[rt] = %b ...", Reg[rt]);</tt>
+statements in a module to print on the STDOUT the
+contents of a register <tt>rt</tt> You would better have a neat
+display to make your life easier when you have to debug a more complicated
+processor.</p>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS. To run your solution, use the following command.</p>
+
+<blockquote>
+<pre>	$ vcs -R ALU_behav.v lshift2.v signextend.v mux.v SingleCycleProc.v <i>[-o output_executable_file]</i>
+</pre>
+</blockquote>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+Turn in your Verilog code and simulation results with the test program provided <a href="http://students.cse.tamu.edu/msahn/csce350-sp2011/handout/files/project2/imeminit_simple_test.v">here</a>.
+You also need to submit a report about your design. For example, you need to show truth tables for all control signals you are using in the project.
+
+<hr>
+
+<p>Acknowledgement: This project was originally developed by Dr. Michael E. Thomadakis.</p><p>
+
+
+
+
+</p></body></html>
