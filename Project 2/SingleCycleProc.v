@@ -1,9 +1,9 @@
 // Texas A&M University          //
 // cpsc350 Computer Architecture //
-// $Id: SingleCycleProc.v,v 1.1 2002/04/08 23:16:14 miket Exp miket $ //
+//Alan Achtenberg??
+//Project 2//
 
-// instruction opcode
-//R-Type (Opcode 000000)
+
 `define OPCODE_ADD     6'b000000
 `define OPCODE_SUB     6'b000000
 `define OPCODE_ADDU    6'b000000
@@ -39,10 +39,28 @@
 `define OPCODE_J       6'b000010
 `define OPCODE_JAL     6'b000011
 
+`define ADD  4'b0111 // 2's compl add
+`define ADDU 4'b0001 // unsigned add
+`define SUB  4'b0010 // 2's compl subtract
+`define SUBU 4'b0011 // unsigned subtract
+`define AND  4'b0100 // bitwise AND
+`define OR   4'b0101 // bitwise OR
+`define XOR  4'b0110 // bitwise XOR
+`define SLT  4'b1010 // set result=1 if less than 2's compl
+`define SLTU 4'b1011 // set result=1 if less than unsigned
+`define NOP  4'b0000 // do nothing
+
+
+
 // Top Level Architecture Model //
-
+`include "Control.v"
 `include "IdealMemory.v"
-
+`include "PC.v"
+`include "RegisterFile.v"
+`include "mux.v"
+`include "ALU_bhav.v"
+`include "signextend.v"
+`include "ALUControl.v"
 /*-------------------------- CPU -------------------------------
  * This module implements a single-cycle
  * CPU similar to that described in the text book 
@@ -77,24 +95,63 @@ module SingleCycleProc(CLK, Reset_L, startPC, dmemOut);
    input 	Reset_L, CLK;
    input [31:0] startPC;
    output [31:0] dmemOut;
-
-
+	
+	wire [31:0] PC;
+	wire [31:0] Instr;
 
 //
 // INSERT YOUR CPU MODULES HERE
-//
+    
+	ProgramCounter PC1(PC, PC, Reset_L, startPC,CLK);
+	
+	InstrMem IM1(PC, Instr);
+	
+	wire RegDst, ALUSrc, MemToReg, RegWrite, MemRead, MemWrite, Branch, Jump, SignExtend;
+	wire [3:0]ALUOp;
+	
+	Control_Unit C1(RegDst, ALUSrc, MemToReg, RegWrite, MemRead, MemWrite, Branch, Jump, SignExtend, ALUOp, Instr[31:26]);
+	
+	wire [3:0] ALUctrl;
+	
+	ALUControl AC1(ALUctrl, ALUOp,Instr[5:0]);
+	
+	wire [4:0] Waddr;
+	
+	MUX5_2to1 mux1(Instr[20:16], Instr[15:11], RegDst, Waddr );
 
-
+	wire [31:0]Read1, Read2, Writedata;
+	
+	RegisterFile RF1(Read1, Read2, Writedata, Instr[25:21],Instr[20:16], Waddr, RegWrite, CLK, Reset_L);
+	
+	wire [31:0]Immediate; //Sign extended value
+	SIGN_EXTEND SE1(Instr[15:0], Immediate);
+	
+	wire [31:0] ALUin, Result; //
+	wire Zero;
+	
+	MUX32_2to1 mux2(Read2, Immediate, ALUSrc, ALUin);
+	ALU_behav ALU1( Read1, ALUin, ALUctrl, Writedata, Overflow, 1'b0, Carry_out, Zero ); 
+	
+	
+	
 
 //
-// Debugging threads that you may find helpful (you may have
-// to change the variable names).
+// Debugging 
 //
-   /*  Monitor changes in the program counter
-   always @(PC)
+	/*
+	always @(RegDst or Waddr)
+	begin
+		$display("RegDst %b Waddr %d" , RegDst, Waddr );
+	end
+	*/
+	
+     //Monitor changes in the program counter
+  /* always @(PC)
+	begin
      #10 $display($time," PC=%d Instr: op=%d rs=%d rt=%d rd=%d imm16=%d funct=%d",
 	PC,Instr[31:26],Instr[25:21],Instr[20:16],Instr[15:11],Instr[15:0],Instr[5:0]);
-   */
+	end
+  */
 
    /*   Monitors memory writes
    always @(MemWrite)
@@ -103,6 +160,12 @@ module SingleCycleProc(CLK, Reset_L, startPC, dmemOut);
 	            MemWrite, clock, dmemaddr, rportb);
 	end
    */
+   
+   /*always @(Instr)
+	begin
+     #10 $display($time,"OPCODE=%b, ALUctrl=%b , ALUOp=%b", Instr[31:26],ALUctrl, ALUOp);
+	end
+	*/
    
 endmodule // CPU
 
@@ -137,9 +200,9 @@ module testCPU(Reset_L, startPC, testData);
       Reset_L = 0;  startPC = 0 * 4;
       #101 // insures reset is asserted across negative clock edge
 	  Reset_L = 1; 
-      #10000; // allow enough time for program 1 to run to completion
+      #1000; // allow enough time for program 1 to run to completion
       Reset_L = 0;
-      #1 $display ("Program 1: Result: %d", testData);
+     // #1 $display ("Program 1: Result: %d", testData);
       
       // Your program 2
       //startPC = 14 * 4;
