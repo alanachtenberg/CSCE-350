@@ -1,0 +1,109 @@
+
+<!-- saved from url=(0065)http://students.cs.tamu.edu/wanglei/csce350/handout/project3.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>CSCE 350: Computer Architecture and Design</title>
+</head>
+
+<body lang="EN-US" link="blue" vlink="blue">
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">
+CSCE 350: Computer Architecture and Design</span></b></p>
+
+<p align="center" style="text-align:center"><b><span style="font-size:13.5pt">Project 3</span></b></p>
+
+<hr>
+
+<h3>1. Objective</h3>
+
+<p>In this project, you
+will extend the basic MIPS processor of the previous project to build a
+complete processor. The single-cycle processor will execute a given subset of
+the MIPS instruction set. During demonstration of your project various MIPS
+test programs will be used for verification of your work.</p>
+
+<h3>2. Complete a Single-Cycle Processor</h3>
+
+<p>Extend the basic
+single-cycle
+processor (SCP) to support all instructions in the table.</p>
+
+<table align="center" border="1">
+<tbody><tr>
+	<th align="center">Type</th><th align="center">Instructions</th>
+</tr>
+<tr>
+	<td align="center">Arithmetic (unsigned)</td><td align="center">addu, subu, addiu, <strike>multu, divu</strike></td>
+</tr>
+<tr>
+	<td align="center">Arithmetic (signed)</td><td align="center">add, sub, addi, <strike>mult, div</strike></td>
+</tr>
+<tr>
+	<td align="center">Logical</td><td align="center">and, andi, or, ori, xor, xori</td>
+</tr>
+<tr>
+	<td align="center">Shift</td><td align="center">sll, sra, srl</td>
+</tr>
+<tr>
+	<td align="center">Compare</td><td align="center">slt, slti, sltu, sltiu</td>
+</tr>
+<tr>
+	<td align="center">Control</td><td align="center">beq, bne, <strike>blez, bgtz</strike>, j, <strike>jr, jal</strike></td>
+</tr>
+<tr>
+	<td align="center">Data transfer</td><td align="center">lw, sw, <strike>lui, lb, sb</strike></td>
+</tr>
+</tbody></table>
+
+<p>Use the actual MIPS machine language instruction formats, given in the back cover of your textbook. 
+This project has some branch instructions and data transfer instructions as well as more ALU instructions. 
+You need to design all control signals to take care of the additional instructions.</p><p>
+
+</p><h3>3.1 Extending ALU</h3>
+
+<p>Extend ALU capability to support more instructions, such as logical instructions, shift instructions, and compare instructions. 
+Since these instructions are either R-type or I-type, just extend the controller and ALU without any additional module.</p>
+
+<h3>3.2 Supporing Control Instructions</h3>
+
+<p>In the previous project, PC was always incresing by 4. However, if the instruction fetched from the instruction memory is a control instruction, 
+the behavior of PC is different.
+When the instruction is a branch instruction, the next value of PC is either PC + 4 if the branch is not taken or PC + 4 + offset if the branch is taken. 
+The offset is coming from <tt>imm16</tt>. One mux is required to control the value of PC. 
+Since the branch instruction is not always taken, the mux must be controlled by an output of ALU named <tt>Zero</tt> as well.</p><p>
+
+</p><p>Unlike branch instructions, jump instructions are always taken and the target address is nearly fully provided in the instructions. 
+Thus, another mux is required to control the value of PC. This mux selects the jump address if the instruction is a jump instrution.</p>
+
+<h3>3.3 Supporting Data Transfer Instructions</h3>
+
+<p>Usually, data transfer instructions use indirct address mode, which requires addition to calculate the address.
+Once the address is determined, it is fed into <tt>DataMem</tt>. 
+If the instruction is a store instruction, the written value must come from the register file and is fed to <tt>Datamem</tt>.
+If the instruction is a load instruction, there is an output from <tt>Datamem</tt> going to the register. 
+Since ALU has an output going to the register file, one mux is needed to select a write data to the register file.</p><p>
+
+</p><h3>3. Testing and Diagnostic Programs</h3>
+
+<p>A simple diagnostic program is provided in <a href="http://students.cs.tamu.edu/tanzir/csce350/handout/files/project2/imeminit.v">imeminit.v</a>. You need to run the
+program using your processor and display the all internal states of a module by
+using appropriately coded <tt>$display("...");</tt> statements from within the module.</p>
+
+<p><span style="color:red">Check-off Requirement:</span>
+Show your solution to TA and demonstrate
+program execution in VCS.</p>
+
+<hr>
+
+<p><b>Submission Requirement</b></p>
+Turn in your Verilog code and simulation results with the test program provided.
+You also need to submit a report about your design. For example, you need to show truth tables for all control signals you are using in the project.
+
+<hr>
+
+<p>Acknowledgement: This project was developed by Dr. Michael E. Thomadakis.</p><p>
+
+
+
+
+</p></body></html>
